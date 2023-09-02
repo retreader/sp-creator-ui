@@ -1,28 +1,33 @@
-// SpotifyLogin.jsx
+import React from 'react';
+import { Button } from '@mui/material';
+import apiService from './apiService';  // Assuming you have this service
 
-import React, { useState, useEffect } from 'react';
+function SpotifyLoginButton() {
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
 
-import apiService from './apiService';
+  React.useEffect(() => {
+    async function checkLoginStatus() {
+      const loggedIn = await apiService.isLoggedIn();
+      setIsLoggedIn(loggedIn);
+    }
 
-function SpotifyLogin() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    // Check if the user is logged in when the component mounts
-    fetch('/is-logged-in')
-      .then(response => response.json())
-      .then(data => setIsLoggedIn(data.isLoggedIn));
+    checkLoginStatus();
   }, []);
 
+  const handleLogin = () => {
+    apiService.handleLogin();
+  };
+
   return (
-    <div>
-      {isLoggedIn ? (
-        <span>User is logged in</span>
-      ) : (
-        <button onClick={apiService.handleLogin}>Login with Spotify</button>
-      )}
-    </div>
+    <Button 
+      variant="contained" 
+      color="primary" 
+      onClick={handleLogin} 
+      disabled={isLoggedIn}
+    >
+      {isLoggedIn ? 'Logged in to Spotify' : 'Login to Spotify'}
+    </Button>
   );
 }
 
-export default SpotifyLogin;
+export default SpotifyLoginButton;

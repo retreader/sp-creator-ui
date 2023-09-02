@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableRow, Checkbox, Button, Box } from '@mui/material';
+import { Table, TableBody, TableCell, TableHead, TableRow, Checkbox, Button, Box, TextField } from '@mui/material';
+import apiService from './apiService'
 
 function SongTable({ songs, onSelect, selectedSongs }) {
   const [selected, setSelected] = useState([]);
+  const [playlistName, setPlaylistName] = useState('');
 
   const isSongSelected = (songId) => selected.includes(songId);
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = songs.map((song) => song.id);
+      const newSelecteds = songs['songs'].map((song) => song.id);
       setSelected(newSelecteds);
       return;
     }
@@ -36,9 +38,27 @@ function SongTable({ songs, onSelect, selectedSongs }) {
   };
 
   const handleConfirmSelection = () => {
-    const songsToSelect = songs.filter(song => selected.includes(song.id));
-    onSelect(songsToSelect);
+    const songsToSelect = songs['songs'].filter(song => selected.includes(song.id));
+    if (typeof onSelect === 'function') {
+      onSelect(songsToSelect);
+    } else {
+      console.error('onSelect is not a function');
+    }
   };
+
+const handleCreatePlaylist = async () => {
+    // Use the apiService to create a playlist
+    const playlistData = {
+      name: playlistName,
+      songs: selected
+    };
+    const success = await apiService.createPlaylist(playlistData);
+    if (success) {
+        onPlaylistCreated(true); // This will open the modal in the App component
+    }
+};
+
+
 
   return (
     <div>
@@ -59,7 +79,7 @@ function SongTable({ songs, onSelect, selectedSongs }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {songs.map((song) => (
+          {songs['songs'] && songs['songs'].map((song) => (
             <TableRow key={song.id} onClick={(event) => handleClick(event, song.id)}>
               <TableCell padding="checkbox">
                 <Checkbox checked={isSongSelected(song.id)} />
@@ -73,25 +93,34 @@ function SongTable({ songs, onSelect, selectedSongs }) {
           ))}
         </TableBody>
       </Table>
+      <TextField
+        label="Playlist Name"
+        variant="outlined"
+        value={playlistName}
+        onChange={(e) => setPlaylistName(e.target.value)}
+        style={{ marginBottom: '20px' }}
+      />
       <Button variant="contained" color="primary" onClick={handleConfirmSelection}>
         Confirm Selection
       </Button>
-
+      <Button variant="contained" color="secondary" onClick={handleCreatePlaylist} style={{ marginLeft: '10px' }}>
+        Create Playlist
+      </Button>
       {/* Summary of Selected Songs */}
       <Box mt={4} mb={2} fontWeight="bold">
         Selected Songs:
       </Box>
-      <Box 
+      <Box
         style={{
-          maxHeight: '150px', 
-          overflowY: 'auto', 
-          padding: '10px', 
-          border: '1px solid #ccc', 
+          maxHeight: '150px',
+          overflowY: 'auto',
+          padding: '10px',
+          border: '1px solid #ccc',
           borderRadius: '5px',
           background: '#f5f5f5'
         }}
       >
-        {selectedSongs.map(song => (
+        {Array.isArray(selectedSongs) && selectedSongs.map(song => (
           <Box key={song.id} display="flex" alignItems="center" mb={1}>
             <Box flexGrow={1} whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
               {song.name} - {song.artists[0]?.name || ''}
@@ -102,5 +131,13 @@ function SongTable({ songs, onSelect, selectedSongs }) {
     </div>
   );
 }
+
+SongTable.defaultProps = {
+  onSelect: () => { },
+  onPlaylistCreated: () => {},
+  songs: [],
+  selectedSongs: [],
+};
+
 
 export default SongTable;

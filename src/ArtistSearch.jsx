@@ -1,75 +1,68 @@
 import React, { useState } from 'react';
-import { Autocomplete, TextField, Chip, Button } from '@mui/material';
+import { TextField, Button, Box, Autocomplete, Chip } from '@mui/material';
+import NumberOfSongsSelector from './NumberOfSongsSelector';
 import apiService from './apiService';
 
 function ArtistSearch({ onSelect }) {
-  const [artistInput, setArtistInput] = useState('');
-  const [artistOptions, setArtistOptions] = useState([]);
   const [selectedArtists, setSelectedArtists] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+  const [numSongs, setNumSongs] = useState(10); // Default to 10 songs
 
-  const handleInputChange = async (event, value) => {
-    setArtistInput(value);
-    if (value.length > 2) {
-      const artists = await apiService.searchArtists(value);
-      setArtistOptions(artists.artists || []);
-    }
+  const handleSearchChange = async (event, newValue) => {
+  try {
+    const fetchedArtists = await apiService.searchArtists(event.target.value);
+    setSuggestions(Array.isArray(fetchedArtists?.artists) ? fetchedArtists.artists : []);
+  } catch (error) {
+    console.error("Error fetching artist suggestions:", error);
+    setSuggestions([]); // Ensure it's an array even in case of an error
+  }
+};
+
+  const handleArtistSelection = (event, newValue) => {
+    setSelectedArtists(newValue);
   };
 
-  const handleAddArtist = (event, newValue) => {
-    if (newValue) {
-      setSelectedArtists(prevArtists => [...prevArtists, newValue]);
-      setArtistInput('');
-    }
-  };
-
-  const handleDeleteArtist = (artistToDelete) => {
-    setSelectedArtists(prevArtists => prevArtists.filter(artist => artist.id !== artistToDelete.id));
+  const handleSearch = () => {
+    const artistIds = selectedArtists.map(artist => artist.name);
+    onSelect(artistIds, numSongs);
   };
 
   return (
-    <div style={{ padding: '10px' }}>
+    <div>
       <Autocomplete
-        options={artistOptions}
+        multiple
+        id="artist-search"
+        options={suggestions}
         getOptionLabel={(option) => option.name}
-        onInputChange={handleInputChange}
-        onChange={handleAddArtist}
-         style={{ width: '300px', marginBottom: '10px' }} // Adjusting the width
+        onInputChange={handleSearchChange}
+        onChange={handleArtistSelection}
+        renderTags={(value, getTagProps) =>
+          value.map((option, index) => (
+            <Chip variant="outlined" label={option.name} {...getTagProps({ index })} />
+          ))
+        }
         renderInput={(params) => (
           <TextField
             {...params}
-            label="Search for artists"
             variant="outlined"
-            InputProps={{
-              ...params.InputProps,
-              style: {
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                color: 'red',
-                borderColor: '#b71c1c',
-              },
-            }}
-            InputLabelProps={{
-              style: {
-                color: '#b71c1c',
-              },
-            }}
+            label="Search for Artists"
+            placeholder="Start typing..."
           />
-        )}
-        PaperComponent={({ children }) => (
-          <ul style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', color: 'red' }}>{children}</ul>
         )}
       />
-      <div style={{ marginBottom: '10px' }}>
-        {selectedArtists.map(artist => (
-          <Chip
-            key={artist.id}
-            label={artist.name}
-            onDelete={() => handleDeleteArtist(artist)}
-            style={{ margin: '5px', backgroundColor: '#212121', color: 'white', borderColor: '#b71c1c' }}
-          />
-        ))}
-      </div>
-      <Button variant="contained" style={{ backgroundColor: '#b71c1c', color: 'white', marginBottom: '10px' }} onClick={() => onSelect(selectedArtists)}>
-        Next
+
+      <Box mt={2}>
+        <NumberOfSongsSelector value={numSongs} onChange={(e) => setNumSongs(e.target.value)} />
+      </Box>
+
+      <Button 
+        variant="contained" 
+        color="primary" 
+        onClick={handleSearch} 
+        style={{ marginTop: '20px' }}
+        disabled={selectedArtists.length === 0} // Disable button if no artist is selected
+      >
+        Search
       </Button>
     </div>
   );
