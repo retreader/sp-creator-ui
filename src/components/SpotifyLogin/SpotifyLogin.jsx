@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button } from '@mui/material';
-import apiService from './apiService';  // Assuming you have this service
+import {Button} from '@mui/material';
+import apiService from '../../services/apiService.jsx'; // Assuming you have this service
 
 function SpotifyLoginButton() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);

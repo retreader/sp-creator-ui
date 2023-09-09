@@ -1,4 +1,4 @@
-import { BASE_URL } from './constants';  // Assuming you have a constants file or you can directly define the BASE_URL here
+import {BASE_URL} from '../constants.js'; // Assuming you have a constants file or you can directly define the BASE_URL here
 
 const apiService = {
   async searchArtists(query) {

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Checkbox, FormControl, FormControlLabel, FormGroup, Button } from '@mui/material';
-import apiService from './apiService';
+import React, {useEffect, useState} from 'react';
+import {Button, Checkbox, FormControl, FormControlLabel, FormGroup} from '@mui/material';
+import apiService from '../../services/apiService.jsx';
 
 function GenreSelector({ onSelect }) {
   const [availableGenres, setAvailableGenres] = useState([]);

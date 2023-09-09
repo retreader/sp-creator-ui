@@ -1,27 +1,58 @@
-// theme.js
-import { createTheme } from '@mui/material/styles';
+import {createTheme} from '@mui/material/styles';
 
-const theme = createTheme({
-  palette: {
-    type: 'dark', // This will set the dark mode for Material-UI components
-    primary: {
-      main: '#b71c1c', // A deep, gothic red
+export default createTheme({
+    palette: {
+        primary: {
+            main: '#89ABE3',
+            contrastText: '#fff', // This ensures text on the button is readable
+        },
+        secondary: {
+            main: '#98DDCA',
+        },
+        background: {
+            default: '#F2F2F2',
+        },
     },
-    secondary: {
-      main: '#311b92', // A dark purple
+    typography: {
+        fontFamily: '"Arial", sans-serif',
     },
-    background: {
-      default: '#121212', // A dark gray background
-      paper: '#1e1e1e', // Slightly lighter for contrast
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    background: 'linear-gradient(45deg, #89ABE3 30%, #98DDCA 90%)',
+                    borderRadius: '3px',
+                    border: 0,
+                    color: 'white',
+                    height: 48,
+                    padding: '0 30px',
+                    boxShadow: '0 3px 5px 2px rgba(137, 171, 227, .3)',
+                    '&:hover': {
+                        background: 'linear-gradient(45deg, #98DDCA 30%, #89ABE3 90%)',
+                    },
+                },
+            },
+        },
+        MuiInputBase: {
+            styleOverrides: {
+                root: {
+                    margin: '2rem 0'
+                },
+            },
+        },
+        MuiSelect: {
+            styleOverrides: {
+                root: {
+                    margin: '0rem 0'
+                },
+            },
+        },
+        MuiChip: {
+            styleOverrides: {
+                root: {
+                    margin: '0.2rem 0'
+                },
+            },
+        },
     },
-  },
-  typography: {
-    fontFamily: "'Cinzel', serif", // A gothic-like font
-    h4: {
-      fontWeight: 600,
-      marginBottom: '20px',
-    },
-  },
 });
-
-export default theme;
