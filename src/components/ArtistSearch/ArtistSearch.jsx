@@ -1,21 +1,15 @@
-import React, {useEffect, useState} from 'react';
-import {Autocomplete, Box, Chip, TextField} from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { setSelectedArtists } from '../../store/actions/actions';
+import { Autocomplete, Box, Chip, TextField } from '@mui/material';
 import NumberOfSongsSelector from '../NumberOfSongsSelector/NumberOfSongsSelector.jsx';
 import apiService from '../../services/apiService.jsx';
 
-function ArtistSearch({value, onSelect}) {
-    const [selectedArtists, setSelectedArtists] = useState([]);
+function ArtistSearch() {
+    const dispatch = useDispatch();
+    const selectedArtists = useSelector(state => state.selectedArtists);
     const [suggestions, setSuggestions] = useState([]);
     const [numSongs, setNumSongs] = useState(10); // Default to 10 songs
-
-    useEffect(() => {
-        const artistNames = selectedArtists.map(artist => artist.name);
-        onSelect(artistNames);
-    }, [selectedArtists]);
-
-    useEffect(() => {
-        onSelect(null, numSongs)
-    }, [numSongs])
 
     const handleSearchChange = async (event, newValue) => {
         try {
@@ -28,9 +22,8 @@ function ArtistSearch({value, onSelect}) {
     };
 
     const handleArtistSelection = (event, newValue) => {
-        setSelectedArtists(newValue);
+        dispatch(setSelectedArtists(newValue));
     };
-
 
     return (
         <div>
@@ -43,7 +36,7 @@ function ArtistSearch({value, onSelect}) {
                 onChange={handleArtistSelection}
                 renderTags={(value, getTagProps) =>
                     value.map((option, index) => (
-                        <Chip variant="outlined" label={option.name} {...getTagProps({index})} />
+                        <Chip variant="outlined" label={option.name} {...getTagProps({ index })} />
                     ))
                 }
                 renderInput={(params) => (
@@ -57,7 +50,7 @@ function ArtistSearch({value, onSelect}) {
             />
 
             <Box mt={2}>
-                <NumberOfSongsSelector value={numSongs} onChange={(e) => setNumSongs(e.target.value)}/>
+                <NumberOfSongsSelector value={numSongs} onChange={(e) => setNumSongs(e.target.value)} />
             </Box>
         </div>
     );

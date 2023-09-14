@@ -1,7 +1,11 @@
 import {Box, Chip} from "@mui/material";
+import { useSelector, useDispatch } from 'react-redux';
+import { setSelectedMoods } from '../../store/actions/actions';
 
-function MoodSelector({value: selectedMoods, onSelect}) {
-    const moodsWithOposite = {
+function MoodSelector() {
+    const dispatch = useDispatch();
+    const selectedMoods = useSelector(state => state.selectedMoods);
+    const moodsWithOpposite = {
         'Happy': ['Sad', 'Angry', 'Stressed'],
         'Sad': ['Happy', 'Energetic', 'Motivated', 'Excited', 'Confident', 'Adventurous'],
         'Energetic': ['Sad', 'Relaxed', 'Chill', 'Sleepy'],
@@ -20,23 +24,16 @@ function MoodSelector({value: selectedMoods, onSelect}) {
     };
 
     const handleChipClick = (mood) => {
-        let newSelected;
         if (selectedMoods.includes(mood)) {
-            newSelected = selectedMoods.filter(m => m !== mood);
+            dispatch(setSelectedMoods(selectedMoods.filter(m => m !== mood)));
         } else {
-            newSelected = [...selectedMoods, mood];
-
-            // If the mood has an opposite, remove it from the selection
-            if (moodsWithOposite[mood].length > 0) {
-                newSelected = newSelected.filter(m => !moodsWithOposite[mood].includes(m));
-            }
+            dispatch(setSelectedMoods([...selectedMoods, mood]));
         }
-        onSelect(newSelected);
     };
 
     return (
         <Box display="flex" flexWrap="wrap" gap={1}>
-            {Object.keys(moodsWithOposite).map(mood => (
+            {Object.keys(moodsWithOpposite).map(mood => (
                 <Chip
                     key={mood}
                     label={mood}

@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import {useSelector, useDispatch} from 'react-redux';
 import * as yup from 'yup';
 import {Alert, Backdrop, Box, Button, CircularProgress, Container, Grid, Modal, Typography} from '@mui/material';
 import ActivitySelector from './components/ActivitySelector/ActivitySelector.jsx';
@@ -8,6 +9,14 @@ import ArtistGenderPreference from './components/ArtistGenderPreference/ArtistGe
 import SongTable from './components/SongTable/SongTable.jsx';
 import SpotifyLoginButton from './components/SpotifyLogin/SpotifyLogin.jsx';
 import apiService from "./services/apiService.jsx";
+import {
+    setErrorMessage,
+    clearErrorMessage,
+    setLoading,
+    setIsModalOpen,
+    setSelectedSongs,
+    resetWorkflow
+} from './store/actions/actions.js'
 
 const validationSchema = yup.object().shape({
     selectedMoods: yup.array().min(1, 'Please select at least one mood.'),
@@ -17,16 +26,17 @@ const validationSchema = yup.object().shape({
 });
 
 function App() {
-    const [selectedMoods, setSelectedMoods] = useState([]);
-    const [selectedActivities, setSelectedActivities] = useState([]);
-    const [selectedArtists, setSelectedArtists] = useState([]);
-    const [numSongs, setNumSongs] = useState(10);
-    const [artistGenderPreference, setArtistGenderPreference] = useState('');
-    const [selectedGenres, setSelectedGenres] = useState([]);
-    const [selectedSongs, setSelectedSongs] = useState({songs: []});
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const dispatch = useDispatch();
+    const selectedMoods = useSelector(state => state.selectedMoods);
+    const selectedActivities = useSelector(state => state.selectedActivities);
+    const selectedArtists = useSelector(state => state.selectedArtists);
+    const numSongs = useSelector(state => state.songSelections);
+    const artistGenderPreference = useSelector(state => state.artistGenderPreference);
+    const selectedGenres = useSelector(state => state.selectedGenres);
+    const selectedSongs = useSelector(state => state.selectedSongs);
+    const isModalOpen = useSelector(state => state.modal.isModalOpen);
+    const loading = useSelector(state => state.loading); // Assuming you have a loading state in Redux
+    const errorMessage = useSelector(state => state.errorMessage); // Assuming you have an errorMessage state in Redux
 
     const validateSelections = async () => {
         try {
@@ -44,33 +54,23 @@ function App() {
     const fetchSongSelections = async () => {
         if (!await validateSelections()) return;
 
-        setLoading(true);
+        dispatch(setLoading(true));
         const data = {
             moods: selectedMoods,
             activities: selectedActivities,
-            artists: selectedArtists,
+            artists: selectedArtists.map(a => a.name),
             genderPreference: artistGenderPreference,
             genres: selectedGenres,
             songCount: numSongs
         };
         const songResults = await apiService.searchSongs(data);
-        setSelectedSongs(songResults);
-        setLoading(false);
-    };
-
-    const resetWorkflow = () => {
-        setSelectedMoods([]);
-        setSelectedActivities([]);
-        setSelectedArtists([]);
-        setArtistGenderPreference('');
-        setSelectedGenres([]);
-        setSelectedSongs({songs: []});
-        setIsModalOpen(false);
+        dispatch(setSelectedSongs(songResults));
+        dispatch(setLoading(false));
     };
 
     const handleSongSelectionConfirmation = (newSongs) => {
-        setSelectedSongs(newSongs)
-        setIsModalOpen(true)
+        dispatch(setSelectedSongs(newSongs));
+        dispatch(setIsModalOpen(true))
     }
 
     return (
@@ -78,12 +78,7 @@ function App() {
             <Grid container spacing={3} direction="column">
                 {selectedSongs.songs.length > 0 ? (
                     <Grid item xs={12}>
-                        <SongTable
-                            value={selectedSongs.songs}
-                            songs={selectedSongs.songs}
-                            onPlaylistCreated={setIsModalOpen}
-                            selectedSongs={selectedSongs}
-                        />
+                        <SongTable/>
                     </Grid>
                 ) : (
                     <>
@@ -92,23 +87,19 @@ function App() {
                         </Grid>
 
                         <Grid item>
-                            <ActivitySelector value={selectedActivities} onSelect={setSelectedActivities}/>
+                            <ActivitySelector/>
                         </Grid>
 
                         <Grid item>
-                            <MoodSelector value={selectedMoods} onSelect={setSelectedMoods}/>
+                            <MoodSelector/>
                         </Grid>
 
                         <Grid item>
-                            <ArtistSearch value={selectedArtists} onSelect={(artists, numSongs) => {
-                                artists && setSelectedArtists(artists);
-                                numSongs && setNumSongs(numSongs);
-                            }}/>
+                            <ArtistSearch/>
                         </Grid>
 
                         <Grid item>
-                            <ArtistGenderPreference value={artistGenderPreference}
-                                                    onSelect={setArtistGenderPreference}/>
+                            <ArtistGenderPreference/>
                         </Grid>
 
                         <Grid item>
@@ -130,7 +121,7 @@ function App() {
 
             <Modal
                 open={isModalOpen}
-                onClose={resetWorkflow}
+                onClose={() => dispatch(resetWorkflow)}
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >

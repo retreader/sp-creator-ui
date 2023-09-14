@@ -1,11 +1,15 @@
 import React from 'react';
-import {FormControl, InputLabel, MenuItem, Select} from "@mui/material";
+import { useSelector, useDispatch } from 'react-redux';
+import { setArtistGenderPreference } from '../../store/actions/actions';
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
-function ArtistGenderPreference({value: selectedGender, onSelect}) {
+function ArtistGenderPreference() {
+    const dispatch = useDispatch();
+    const selectedGender = useSelector(state => state.artistGenderPreference);
     const genders = ['Male', 'Female', 'Non-Binary', 'Any'];
 
     const handleChange = (event) => {
-        onSelect(event.target.value);
+        dispatch(setArtistGenderPreference(event.target.value));
     };
 
     return (

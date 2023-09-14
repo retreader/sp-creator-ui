@@ -1,9 +1,14 @@
 import React, {useState} from 'react';
 import {Alert, Button, Checkbox, Table, TableBody, TableCell, TableHead, TableRow, TextField} from '@mui/material';
+import { useSelector, useDispatch } from 'react-redux';
+import { setSelectedSongs } from '../../store/actions/actions';
+
 import apiService from '../../services/apiService.jsx';
 
-function SongTable({songs, onSelect, onPlaylistCreated}) {
-    const [selectedSongs, setSelectedSongs] = useState([]);
+function SongTable() {
+    const dispatch = useDispatch();
+    const songs = useSelector(state => state.songs);
+    const selectedSongs = useSelector(state => state.selectedSongs);
     const [playlistName, setPlaylistName] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -11,17 +16,17 @@ function SongTable({songs, onSelect, onPlaylistCreated}) {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            setSelectedSongs(songs.map((song) => song.id));
+            dispatch(setSelectedSongs(songs.map((song) => song.id)));
         } else {
-            setSelectedSongs([]);
+            dispatch(setSelectedSongs([]));
         }
     };
 
     const handleClick = (songId) => {
         if (isSongSelected(songId)) {
-            setSelectedSongs((prevSelected) => prevSelected.filter((id) => id !== songId));
+            dispatch(setSelectedSongs((prevSelected) => prevSelected.filter((id) => id !== songId)));
         } else {
-            setSelectedSongs((prevSelected) => [...prevSelected, songId]);
+            dispatch(setSelectedSongs((prevSelected) => [...prevSelected, songId]));
         }
     };
 
@@ -31,7 +36,6 @@ function SongTable({songs, onSelect, onPlaylistCreated}) {
             return;
         }
 
-        // Use the apiService to create a playlist
         const playlistData = {
             name: playlistName,
             songs: selectedSongs

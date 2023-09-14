@@ -1,33 +1,36 @@
 import React from 'react';
-import {Button} from '@mui/material';
-import apiService from '../../services/apiService.jsx'; // Assuming you have this service
+import { useSelector, useDispatch } from 'react-redux';
+import { setIsLoggedIn } from '../../store/actions/actions';
+import { Button } from '@mui/material';
+import apiService from '../../services/apiService.jsx';
 
 function SpotifyLoginButton() {
-  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+    const dispatch = useDispatch();
+    const isLoggedIn = useSelector(state => state.isLoggedIn);
 
-  React.useEffect(() => {
-    async function checkLoginStatus() {
-      const loggedIn = await apiService.isLoggedIn();
-      setIsLoggedIn(loggedIn);
-    }
+    React.useEffect(() => {
+        async function checkLoginStatus() {
+            const loggedIn = await apiService.isLoggedIn();
+            dispatch(setIsLoggedIn(loggedIn));
+        }
 
-    checkLoginStatus();
-  }, []);
+        checkLoginStatus();
+    }, [dispatch]);
 
-  const handleLogin = () => {
-    apiService.handleLogin();
-  };
+    const handleLogin = () => {
+        apiService.handleLogin();
+    };
 
-  return (
-    <Button 
-      variant="contained" 
-      color="primary" 
-      onClick={handleLogin} 
-      disabled={isLoggedIn}
-    >
-      {isLoggedIn ? 'Logged in to Spotify' : 'Login to Spotify'}
-    </Button>
-  );
+    return (
+        <Button
+            variant="contained"
+            color="primary"
+            onClick={handleLogin}
+            disabled={isLoggedIn}
+        >
+            {isLoggedIn ? 'Logged in to Spotify' : 'Login to Spotify'}
+        </Button>
+    );
 }
 
 export default SpotifyLoginButton;
